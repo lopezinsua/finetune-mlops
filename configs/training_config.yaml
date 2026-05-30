@@ -1,0 +1,37 @@
+model_name: "mistralai/Mistral-7B-Instruct-v0.3"
+dataset_path: "data/dataset.jsonl"
+
+# QLoRA — cuantización 4-bit
+load_in_4bit: true
+bnb_4bit_quant_type: "nf4"
+bnb_4bit_compute_dtype: "bfloat16"   # bf16 para Blackwell (RTX 5060)
+
+# LoRA adapters
+lora_r: 16
+lora_alpha: 32
+lora_dropout: 0.05
+target_modules:
+  - "q_proj"
+  - "v_proj"
+
+# Entrenamiento — ajustado para RTX 5060 8 GB VRAM
+num_train_epochs: 3
+per_device_train_batch_size: 2       # batch 4 era para A100; 2 para 8 GB
+gradient_accumulation_steps: 8      # effective batch size = 16
+learning_rate: 2.0e-4
+warmup_ratio: 0.03
+lr_scheduler_type: "cosine"
+max_seq_length: 512
+
+# Optimizaciones de VRAM (crítico en 8 GB)
+bf16: true
+gradient_checkpointing: true
+optim: "paged_adamw_8bit"           # optimizer paginado ahorra ~2 GB
+
+# Logging — sin wandb por defecto; cambiar a "wandb" si está configurado
+report_to: "none"
+
+# Output — local primero; activar push_to_hub cuando el modelo esté validado
+output_dir: "./outputs"
+hub_model_id: "lopezinsua/mistral-7b-code-reviewer-es"
+push_to_hub: false

@@ -1,0 +1,35 @@
+# ─────────────────────────────────────────────────────────────
+# PASO 1: instalar PyTorch con CUDA 12.8 ANTES que el resto
+#   pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu128
+#
+# PASO 2: instalar el resto
+#   pip install -r requirements.txt
+#
+# Probado en: RTX 5060 Laptop (Blackwell sm_120), Python 3.14, Windows 11
+# ─────────────────────────────────────────────────────────────
+
+# Core ML — versiones probadas en RTX 5060 (Blackwell) + Python 3.14
+transformers==5.8.0
+peft==0.19.1
+trl==1.4.0
+bitsandbytes>=0.49.0          # 0.45+ requerido para Blackwell (sm_120)
+datasets==4.8.5
+accelerate==1.13.0
+
+# Evaluación
+evaluate==0.4.6
+rouge-score>=0.1.2
+sacrebleu>=2.4.0
+
+# Demo
+gradio==6.14.0
+
+# Utilidades
+huggingface-hub>=1.14.0
+pyyaml>=6.0.1
+numpy>=1.26.0
+scipy>=1.13.0
+tqdm>=4.66.0
+
+# Opcional — logging con Weights & Biases
+# wandb>=0.17.0
