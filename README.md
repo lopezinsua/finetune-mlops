@@ -135,11 +135,42 @@ python src/app.py
 
 ---
 
-## Modelo
+## Usar el modelo publicado
 
-[lopezinsua/mistral-7b-code-reviewer-es](https://huggingface.co/lopezinsua/mistral-7b-code-reviewer-es) en HuggingFace Hub.
+**Con GPU (≥6GB VRAM):**
 
-[Demo interactiva](https://huggingface.co/spaces/lopezinsua/code-reviewer-es) en HuggingFace Spaces.
+```python
+from transformers import pipeline, BitsAndBytesConfig
+import torch
+
+bnb = BitsAndBytesConfig(load_in_4bit=True, bnb_4bit_compute_dtype=torch.bfloat16)
+pipe = pipeline(
+    "text-generation",
+    model="lopezinsua/mistral-7b-code-reviewer-es",
+    model_kwargs={"quantization_config": bnb, "device_map": "auto"},
+)
+
+code = "def suma(a, b):\n  return a - b"
+out = pipe(f"<s>[INST] Revisa este código Python:\n\n{code} [/INST]", max_new_tokens=256)
+print(out[0]["generated_text"].split("[/INST]")[-1].strip())
+```
+
+Primera ejecución descarga ~14 GB (modelo base) + ~26 MB (adaptadores). Las siguientes salen de caché local.
+
+**Sin GPU:** usa la [demo en HuggingFace Spaces](https://huggingface.co/spaces/lopezinsua/code-reviewer-es) directamente desde el navegador — corre en los servidores de HuggingFace, no requiere hardware propio.
+
+| Requisito (local) | Mínimo | Recomendado |
+|-------------------|--------|-------------|
+| GPU VRAM | 6 GB | 8 GB |
+| RAM | 8 GB | 16 GB |
+| Python | 3.10+ | 3.11+ |
+| CUDA | 11.8+ | 12.x |
+
+---
+
+## Modelo en HuggingFace
+
+[lopezinsua/mistral-7b-code-reviewer-es](https://huggingface.co/lopezinsua/mistral-7b-code-reviewer-es)
 
 ---
 

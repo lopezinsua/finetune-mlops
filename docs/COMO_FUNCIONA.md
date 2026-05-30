@@ -90,6 +90,35 @@ Estas métricas comparan texto generado contra texto de referencia automáticame
 
 ---
 
+## Cómo usar el modelo sin reentrenar
+
+**Opción 1 — Sin GPU (más fácil):**
+La [demo en HuggingFace Spaces](https://huggingface.co/spaces/lopezinsua/code-reviewer-es) corre en los servidores de HuggingFace. Solo hace falta un navegador.
+
+**Opción 2 — Con GPU local (≥6GB VRAM):**
+
+```python
+from transformers import pipeline, BitsAndBytesConfig
+import torch
+
+bnb = BitsAndBytesConfig(load_in_4bit=True, bnb_4bit_compute_dtype=torch.bfloat16)
+pipe = pipeline(
+    "text-generation",
+    model="lopezinsua/mistral-7b-code-reviewer-es",
+    model_kwargs={"quantization_config": bnb, "device_map": "auto"},
+)
+
+code = "def suma(a, b):\n  return a - b"
+out = pipe(f"<s>[INST] Revisa este código Python:\n\n{code} [/INST]", max_new_tokens=256)
+print(out[0]["generated_text"].split("[/INST]")[-1].strip())
+```
+
+La primera vez descarga ~14 GB (el modelo base desde HuggingFace) y ~26 MB de adaptadores. En ejecuciones siguientes lo carga desde la caché local.
+
+No hace falta ninguna API key ni cuenta de pago. El modelo es público.
+
+---
+
 ## Para reproducir el entrenamiento
 
 ```bash
