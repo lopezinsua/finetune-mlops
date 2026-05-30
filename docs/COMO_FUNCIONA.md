@@ -17,7 +17,7 @@ Mistral-7B tiene 7.000 millones de parámetros. Entrenar ese modelo completo req
 **QLoRA** (Quantized Low-Rank Adaptation):
 - En lugar de modificar los 7B parámetros, solo se añaden pequeñas matrices de "adaptación" (LoRA) encima del modelo original. Solo esas matrices se entrenan.
 - El modelo base se carga en formato comprimido de 4 bits (en lugar de los 32 bits habituales), lo que reduce la memoria a ~4 GB.
-- Resultado: en vez de entrenar 7.000M parámetros, solo se entrenan **6.8M** (el 0.09%), y todo cabe en una GPU de 8GB.
+- Resultado: en vez de entrenar 7.000M parámetros, solo se entrenan **6.8M** (el 0.09%), y todo cabe en una GPU de 8GB (5060).
 
 ---
 
