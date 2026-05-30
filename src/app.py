@@ -2,10 +2,11 @@ import os
 
 import gradio as gr
 import torch
-from transformers import AutoTokenizer, BitsAndBytesConfig, pipeline
+from peft import PeftModel
+from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig, pipeline
 
-
-MODEL_ID = os.getenv("MODEL_ID", "lopezinsua/mistral-7b-code-reviewer-es")
+BASE_MODEL = os.getenv("BASE_MODEL", "mistralai/Mistral-7B-Instruct-v0.3")
+ADAPTER_PATH = os.getenv("ADAPTER_PATH", "./outputs")
 MAX_INPUT_CHARS = 4000
 
 bnb = BitsAndBytesConfig(
@@ -15,13 +16,14 @@ bnb = BitsAndBytesConfig(
     bnb_4bit_use_double_quant=True,
 )
 
-tokenizer = AutoTokenizer.from_pretrained(MODEL_ID)
-pipe = pipeline(
-    "text-generation",
-    model=MODEL_ID,
-    tokenizer=tokenizer,
-    model_kwargs={"quantization_config": bnb, "device_map": "auto"},
+tokenizer = AutoTokenizer.from_pretrained(ADAPTER_PATH)
+base_model = AutoModelForCausalLM.from_pretrained(
+    BASE_MODEL,
+    quantization_config=bnb,
+    device_map="auto",
 )
+model = PeftModel.from_pretrained(base_model, ADAPTER_PATH)
+pipe = pipeline("text-generation", model=model, tokenizer=tokenizer)
 
 
 def review_code(code: str, max_tokens: int = 256) -> str:
