@@ -1,8 +1,6 @@
 # Fine-tuning MLOps — Code Reviewer en Español
 
-Ciclo MLOps completo alrededor de una tarea concreta: entrenar a Mistral-7B para revisar código Python y responder en español. Desde la curation del dataset hasta el modelo publicado en HuggingFace, pasando por evaluación automatizada y demo interactiva.
-
-El objetivo no es solo que el modelo funcione, sino construir el pipeline entero como lo haría un equipo de ML en producción: configuración reproducible, scripts modulares, métricas objetivas, y despliegue real.
+Ciclo MLOps completo: fine-tuning de Mistral-7B con QLoRA para revisar código Python en español. Dataset curado a mano, entrenamiento local en 8GB VRAM, evaluación con ROUGE/BLEU, modelo publicado en HuggingFace y demo interactiva en Spaces.
 
 ---
 
