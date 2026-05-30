@@ -61,16 +61,14 @@ def train(config_path: str) -> None:
     vram_gb = torch.cuda.get_device_properties(0).total_memory / 1e9
     print(f"GPU: {gpu_name} | VRAM: {vram_gb:.1f} GB | bf16: {torch.cuda.is_bf16_supported()}")
 
-    tokenizer = AutoTokenizer.from_pretrained(cfg["model_name"], trust_remote_code=True)
+    tokenizer = AutoTokenizer.from_pretrained(cfg["model_name"])
     tokenizer.pad_token = tokenizer.eos_token
     tokenizer.padding_side = "right"
 
-    # Carga el modelo solo con cuantización 4-bit; SFTTrainer aplica LoRA internamente
     model = AutoModelForCausalLM.from_pretrained(
         cfg["model_name"],
         quantization_config=get_bnb_config(cfg),
         device_map="auto",
-        trust_remote_code=True,
     )
 
     dataset = build_dataset(cfg["dataset_path"], tokenizer=tokenizer)
@@ -78,7 +76,6 @@ def train(config_path: str) -> None:
 
     use_bf16 = cfg.get("bf16", True)
 
-    # TRL 1.4+: SFTConfig unifica TrainingArguments + parámetros SFT
     sft_args = SFTConfig(
         output_dir=cfg["output_dir"],
         num_train_epochs=cfg["num_train_epochs"],
@@ -98,13 +95,11 @@ def train(config_path: str) -> None:
         push_to_hub=cfg.get("push_to_hub", False),
         hub_model_id=cfg.get("hub_model_id") if cfg.get("push_to_hub") else None,
         report_to=cfg.get("report_to", "none"),
-        # SFT específico (TRL 1.4)
         max_length=cfg["max_seq_length"],
         dataset_text_field="text",
         packing=False,
     )
 
-    # TRL 1.4+: processing_class en vez de tokenizer; peft_config aplicado internamente
     trainer = SFTTrainer(
         model=model,
         train_dataset=dataset["train"],

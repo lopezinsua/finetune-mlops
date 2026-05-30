@@ -2,24 +2,33 @@ import os
 
 import gradio as gr
 import torch
-from transformers import AutoTokenizer, pipeline
+from transformers import AutoTokenizer, BitsAndBytesConfig, pipeline
 
 
 MODEL_ID = os.getenv("MODEL_ID", "lopezinsua/mistral-7b-code-reviewer-es")
+MAX_INPUT_CHARS = 4000
+
+bnb = BitsAndBytesConfig(
+    load_in_4bit=True,
+    bnb_4bit_quant_type="nf4",
+    bnb_4bit_compute_dtype=torch.bfloat16,
+    bnb_4bit_use_double_quant=True,
+)
 
 tokenizer = AutoTokenizer.from_pretrained(MODEL_ID)
 pipe = pipeline(
     "text-generation",
     model=MODEL_ID,
     tokenizer=tokenizer,
-    torch_dtype=torch.float16,
-    device_map="auto",
+    model_kwargs={"quantization_config": bnb, "device_map": "auto"},
 )
 
 
 def review_code(code: str, max_tokens: int = 256) -> str:
     if not code.strip():
         return "Introduce código para revisar."
+    if len(code) > MAX_INPUT_CHARS:
+        return f"El código supera el límite de {MAX_INPUT_CHARS} caracteres. Reduce el fragmento."
     prompt = f"<s>[INST] Revisa este código Python y da feedback detallado:\n\n{code} [/INST]"
     result = pipe(prompt, max_new_tokens=int(max_tokens), do_sample=True, temperature=0.7)
     generated = result[0]["generated_text"]
@@ -29,7 +38,7 @@ def review_code(code: str, max_tokens: int = 256) -> str:
 demo = gr.Interface(
     fn=review_code,
     inputs=[
-        gr.Textbox(label="Código Python", lines=15, placeholder="Pega tu código aquí..."),
+        gr.Textbox(label="Código Python", lines=15, placeholder="Pega tu código aquí...", max_lines=200),
         gr.Slider(64, 512, value=256, step=64, label="Tokens máximos"),
     ],
     outputs=gr.Textbox(label="Feedback del modelo", lines=10),
